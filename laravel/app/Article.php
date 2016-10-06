@@ -37,11 +37,16 @@ class Article extends Model
 
     public function scopeIsPublishedByTag($query)
     {
-        $tag_ids = Tag::where('published','=','0')->lists('id');
+      //$tag_ids = Tag::where('published','=','0')->lists('id');
         
-        $unpublished_articles_id = DB::table('article_tag')->select('article_id')->whereIn('tag_id',$tag_ids)->lists('article_id');
+      //  $unpublished_articles_id = DB::table('article_tag')->select('article_id')->whereIn('tag_id',$tag_ids)->lists('article_id');
         
-        return $query->whereNotIn('id',$unpublished_articles_id);
+        return  $query->whereNotIn('id', function($query){
+                    $query->select('article_id')->from('article_tag')
+                        ->whereIn('tag_id', function($query){
+                            $query->select('id')->from('Tags1')->where('published','=','0');
+                        });
+                } );
     }
 
     public function scopeIsPublishedByCategory($query)
